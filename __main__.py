@@ -37,10 +37,9 @@ class Stock:
         
         return ma_avgs
 
-    def get_ema(self, ema_amount: int, multiplier: int, period, interval):
+    def get_ema(self, prices, ema_amount: int, multiplier: int):
         ema_prices = {}
         ema_avgs = {}
-        prices = self.get_closes(period, interval)
         multiplier = 2 / (ema_amount + 1)
 
         for time, price in prices.items():
@@ -53,7 +52,21 @@ class Stock:
                 ema_avgs[time] = price * multiplier + sum(get_last_n_values(ema_avgs, 1).values()) * (1 - multiplier)
 
         return ema_avgs
-    
+   
+    def get_macd(self, ema_26, ema_9):
+        macd = {}
+        for time, ema_9_price in ema_9.items():
+            ema_26_price = ema_26.get(time)
+            if ema_26_price:
+                macd[time] = ema_26_price - ema_9_price
+        return macd
+
+    def get_constant(self, dic, cons):
+        constants = {}
+        for time in dic.keys():
+            constants[time] = cons
+        return constants
+
     def graph(self, chart_range, charts):
         plt.xlabel("Time")
         plt.ylabel("Price")
@@ -65,7 +78,7 @@ class Stock:
         plt.xticks(chart_range)
         plt.legend()
         plt.show()
-
+    
     def graph_ma(self, period, interval):
         closes = self.get_closes(PERIOD, INTERVAL)
         ma_50 = self.get_ma(MA_SHORT, PERIOD, INTERVAL)
@@ -78,18 +91,32 @@ class Stock:
 
     def graph_ema(self, period, interval):
         closes = self.get_closes(PERIOD, INTERVAL)
-        ema_9 = self.get_ema(EMA_SIGNAL_LINE, EMA_MULTIPLIER, PERIOD, INTERVAL)
-        ema_26 = self.get_ema(EMA_MACD_LINE, EMA_MULTIPLIER, PERIOD, INTERVAL)
+        ema_9 = self.get_ema(closes, 9, EMA_MULTIPLIER)
+        ema_26 = self.get_ema(closes, 26, EMA_MULTIPLIER)
         self.graph(range(0, len(closes), X_AXIS_INTERVAL), {
             "Price": closes, 
-            "Signal Line (9EMA)": ema_9,
-            "MACD (26EMA)": ema_26
+            "9EMA": ema_9,
+            "26EMA": ema_26,
+        })
+
+    def graph_macd(self, period, interval):
+        closes = self.get_closes(PERIOD, INTERVAL)
+        ema_9 = self.get_ema(closes, 9, EMA_MULTIPLIER)
+        ema_26 = self.get_ema(closes, 26, EMA_MULTIPLIER)
+        constant = self.get_constant(ema_9, 0)
+        
+        macd = self.get_macd(ema_9, ema_26)
+        signal_line = self.get_ema(macd, SIGNAL_LINE, EMA_MULTIPLIER)
+        self.graph(range(0, len(closes), X_AXIS_INTERVAL), {
+            "MACD": macd,
+            "Signal Line": signal_line,
+            "Constant": constant,
         })
 
 def __main__():
     ticker = input("Enter ticker: ")
     stock_info = Stock(ticker)
-    stock_info.graph_ema(PERIOD, INTERVAL)
+    stock_info.graph_macd(PERIOD, INTERVAL)
 
 if __name__ == "__main__":
     __main__()

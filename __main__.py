@@ -26,7 +26,8 @@ def graph_charts(*charts):
     
     for chart in charts:
         plt.plot(chart.keys(), chart.values())
-    
+   
+    plt.xticks(range(0, 500, 30))
     plt.show()
 
 def get_ma(prices, ma_amount: int):
@@ -44,9 +45,9 @@ def __main__():
     ticker = input("Enter ticker: ")
     data = get_prices(ticker)
     closes = get_closes(data)
-    closes = get_last_n_values(closes, 50)
-    ma_12 = get_ma(closes, 12)
-    ma_26 = get_ma(closes, 26)
+    closes = get_last_n_values(closes, 500)
+    ma_12 = get_ma(closes, 50)
+    ma_26 = get_ma(closes, 200)
     graph_charts(closes, ma_12, ma_26)
 
 if __name__ == "__main__":

@@ -8,24 +8,31 @@ def get_prices(ticker: str):
     return data
 
 def get_closes(data):
-    closes = []
-    for price in data["Close"]:
-        closes.append(price)
+    closes = {}
+    for i, price in data["Close"].items():
+        closes[str(i.time())] = price
     return closes
 
+def get_last_n_values(dic, n: int):
+    new_dic = {}
+    for i in list(dic)[:n]:
+        new_dic[i] = dic.get(i)
+    return new_dic
+
 def graph_closes(closes):
-    times = [time for time in range(len(closes))]
     plt.xlabel("Time")
     plt.ylabel("Price")
     plt.title("Stock Prices")
     plt.xlim(0, len(closes))
-    plt.plot(times, closes)
+    plt.plot(closes.keys(), closes.values())
+    plt.xticks([])
     plt.show()
 
 def __main__():
     ticker = input("Enter ticker: ")
     data = get_prices(ticker)
     closes = get_closes(data)
+    closes = get_last_n_values(closes, 60)
     graph_closes(closes)
 
 if __name__ == "__main__":

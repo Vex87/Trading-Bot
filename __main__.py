@@ -1,17 +1,7 @@
 import yfinance as yf
 import matplotlib.pyplot as plt
 from constants import *
-
-def get_prices(ticker: str):
-    ticker = ticker.lower()
-    data = yf.download(tickers = ticker, period = TICKER_PERIOD, interval = TICKER_INTERVAL)
-    return data
-
-def get_closes(data):
-    closes = {}
-    for i, price in data["Close"].items():
-        closes[str(i.time())] = price
-    return closes
+import json
 
 def get_last_n_values(dic, n: int):
     new_dic = {}
@@ -19,36 +9,55 @@ def get_last_n_values(dic, n: int):
         new_dic[i] = dic.get(i)
     return new_dic
 
-def graph_charts(*charts):
-    plt.xlabel("Time")
-    plt.ylabel("Price")
-    plt.title("Stock Prices")
-    
-    for chart in charts:
-        plt.plot(chart.keys(), chart.values())
-   
-    plt.xticks(range(0, 500, 30))
-    plt.show()
+class Stock:
+    def __init__(self, ticker: str):
+        self.ticker = ticker.lower()
 
-def get_ma(prices, ma_amount: int):
-    ma_prices = {}
-    ma_avgs = {}
-    for time, price in prices.items():
-        ma_prices[time] = price
-        if len(ma_prices) < ma_amount:
-            continue
-        else:
-            ma_avgs[time] = sum(get_last_n_values(ma_prices, ma_amount).values()) / ma_amount
-    return ma_avgs
+    def get_prices(self, period, interval):
+        return yf.download(tickers=self.ticker, period=period, interval=interval)
+
+    def get_closes(self, period, interval):
+        closes = {}
+        prices = self.get_prices(period, interval)
+        for i, price in prices["Close"].items():
+            closes[str(i.time())] = price
+        return closes
+
+    def get_ma(self, ma_amount, period, interval):
+        ma_prices = {}
+        ma_avgs = {}
+        prices = self.get_closes(period, interval)
+        
+        for time, price in prices.items():
+            ma_prices[time] = price
+            if len(ma_prices) < ma_amount:
+                continue
+            else:
+                ma_avgs[time] = sum(get_last_n_values(ma_prices, ma_amount).values()) / ma_amount
+        
+        return ma_avgs
+
+    def graph(self, chart_range, charts):
+        plt.xlabel("Time")
+        plt.ylabel("Price")
+        plt.title(self.ticker)
+    
+        for chart in charts:
+            plt.plot(chart.keys(), chart.values())
+       
+        plt.xticks(chart_range)
+        plt.show()
+
+    def graph_ma(self, period, interval):
+        closes = self.get_closes(PERIOD, INTERVAL)
+        ma_50 = self.get_ma(MA_SHORT, PERIOD, INTERVAL)
+        ma_200 = self.get_ma(MA_LONG, PERIOD, INTERVAL)
+        self.graph(range(0, len(closes), X_AXIS_INTERVAL), [closes, ma_50, ma_200])
 
 def __main__():
     ticker = input("Enter ticker: ")
-    data = get_prices(ticker)
-    closes = get_closes(data)
-    closes = get_last_n_values(closes, 500)
-    ma_12 = get_ma(closes, 50)
-    ma_26 = get_ma(closes, 200)
-    graph_charts(closes, ma_12, ma_26)
+    stock_info = Stock(ticker)
+    stock_info.graph_ma(PERIOD, INTERVAL)
 
 if __name__ == "__main__":
     __main__()

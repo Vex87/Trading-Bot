@@ -40,19 +40,24 @@ class Stock:
     def graph(self, chart_range, charts):
         plt.xlabel("Time")
         plt.ylabel("Price")
-        plt.title(self.ticker)
+        plt.title(self.ticker.upper())
     
-        for chart in charts:
-            plt.plot(chart.keys(), chart.values())
+        for name, chart in charts.items():
+            plt.plot(chart.keys(), chart.values(), label=name)
        
         plt.xticks(chart_range)
+        plt.legend()
         plt.show()
 
     def graph_ma(self, period, interval):
         closes = self.get_closes(PERIOD, INTERVAL)
         ma_50 = self.get_ma(MA_SHORT, PERIOD, INTERVAL)
         ma_200 = self.get_ma(MA_LONG, PERIOD, INTERVAL)
-        self.graph(range(0, len(closes), X_AXIS_INTERVAL), [closes, ma_50, ma_200])
+        self.graph(range(0, len(closes), X_AXIS_INTERVAL), {
+            "Price": closes, 
+            "50MA": ma_50,
+            "200MA": ma_200
+        })
 
 def __main__():
     ticker = input("Enter ticker: ")

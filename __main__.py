@@ -15,7 +15,7 @@ def get_closes(data):
 
 def get_last_n_values(dic, n: int):
     new_dic = {}
-    for i in list(dic)[:n]:
+    for i in list(dic)[len(dic) - n:]:
         new_dic[i] = dic.get(i)
     return new_dic
 
@@ -25,14 +25,13 @@ def graph_closes(closes):
     plt.title("Stock Prices")
     plt.xlim(0, len(closes))
     plt.plot(closes.keys(), closes.values())
-    plt.xticks([])
     plt.show()
 
 def __main__():
     ticker = input("Enter ticker: ")
     data = get_prices(ticker)
     closes = get_closes(data)
-    closes = get_last_n_values(closes, 60)
+    closes = get_last_n_values(closes, 20)
     graph_closes(closes)
 
 if __name__ == "__main__":

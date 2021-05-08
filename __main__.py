@@ -61,20 +61,36 @@ class Stock:
                 macd[time] = ema_26_price - ema_9_price
         return macd
 
-    def get_constant(self, dic, cons):
-        constants = {}
-        for time in dic.keys():
-            constants[time] = cons
-        return constants
+    def get_macd_histogram(self, macd, signal_line):
+        histogram = {}
+        for time, macd_value in macd.items():
+            signal_line_value = signal_line.get(time)
+            if signal_line_value:
+                histogram[time] = signal_line_value - macd_value
+        return histogram
 
     def graph(self, chart_range, charts):
         plt.xlabel("Time")
         plt.ylabel("Price")
         plt.title(self.ticker.upper())
     
-        for name, chart in charts.items():
-            plt.plot(chart.keys(), chart.values(), label=name)
-       
+        for name, info in charts.items():
+            info_type = info.get("type")
+            info_data = info.get("data")
+            if not info_type or not info_data:
+                continue
+
+            if info_type == "line":
+                plt.plot(info_data.keys(), info_data.values(), label=name)
+            elif info_type == "bar":
+                bar = plt.bar(info_data.keys(), info_data.values(), label=name)
+                for time, price in info_data.items():
+                    index = list(info_data.keys()).index(time)
+                    if price >= 0:
+                        bar[index].set_color("g")
+                    else:
+                        bar[index].set_color("r")
+
         plt.xticks(chart_range)
         plt.legend()
         plt.show()
@@ -103,14 +119,14 @@ class Stock:
         closes = self.get_closes(PERIOD, INTERVAL)
         ema_9 = self.get_ema(closes, 9, EMA_MULTIPLIER)
         ema_26 = self.get_ema(closes, 26, EMA_MULTIPLIER)
-        constant = self.get_constant(ema_9, 0)
-        
+
         macd = self.get_macd(ema_9, ema_26)
         signal_line = self.get_ema(macd, SIGNAL_LINE, EMA_MULTIPLIER)
+        histogram = self.get_macd_histogram(signal_line, macd)
         self.graph(range(0, len(closes), X_AXIS_INTERVAL), {
-            "MACD": macd,
-            "Signal Line": signal_line,
-            "Constant": constant,
+            "MACD": {"type": "line", "data": macd},
+            "Signal Line": {"type": "line", "data": signal_line},
+            "Histogram": {"type": "bar", "data": histogram}
         })
 
 def __main__():

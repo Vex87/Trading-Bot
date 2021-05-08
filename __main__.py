@@ -37,6 +37,23 @@ class Stock:
         
         return ma_avgs
 
+    def get_ema(self, ema_amount: int, multiplier: int, period, interval):
+        ema_prices = {}
+        ema_avgs = {}
+        prices = self.get_closes(period, interval)
+        multiplier = 2 / (ema_amount + 1)
+
+        for time, price in prices.items():
+            ema_prices[time] = price
+            if len(ema_prices) < ema_amount:
+                continue
+            elif len(ema_prices) == ema_amount:
+                ema_avgs[time] = sum(get_last_n_values(ema_prices, ema_amount).values()) / ema_amount
+            else:
+                ema_avgs[time] = price * multiplier + sum(get_last_n_values(ema_avgs, 1).values()) * (1 - multiplier)
+
+        return ema_avgs
+    
     def graph(self, chart_range, charts):
         plt.xlabel("Time")
         plt.ylabel("Price")
@@ -59,10 +76,20 @@ class Stock:
             "200MA": ma_200
         })
 
+    def graph_ema(self, period, interval):
+        closes = self.get_closes(PERIOD, INTERVAL)
+        ema_9 = self.get_ema(EMA_SIGNAL_LINE, EMA_MULTIPLIER, PERIOD, INTERVAL)
+        ema_26 = self.get_ema(EMA_MACD_LINE, EMA_MULTIPLIER, PERIOD, INTERVAL)
+        self.graph(range(0, len(closes), X_AXIS_INTERVAL), {
+            "Price": closes, 
+            "Signal Line (9EMA)": ema_9,
+            "MACD (26EMA)": ema_26
+        })
+
 def __main__():
     ticker = input("Enter ticker: ")
     stock_info = Stock(ticker)
-    stock_info.graph_ma(PERIOD, INTERVAL)
+    stock_info.graph_ema(PERIOD, INTERVAL)
 
 if __name__ == "__main__":
     __main__()

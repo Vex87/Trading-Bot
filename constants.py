@@ -1,0 +1,3 @@
+TICKER_PERIOD = "d"
+TICKER_INTERVAL = "1m"
+

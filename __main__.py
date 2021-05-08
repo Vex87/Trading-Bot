@@ -19,20 +19,35 @@ def get_last_n_values(dic, n: int):
         new_dic[i] = dic.get(i)
     return new_dic
 
-def graph_closes(closes):
+def graph_charts(*charts):
     plt.xlabel("Time")
     plt.ylabel("Price")
     plt.title("Stock Prices")
-    plt.xlim(0, len(closes))
-    plt.plot(closes.keys(), closes.values())
+    
+    for chart in charts:
+        plt.plot(chart.keys(), chart.values())
+    
     plt.show()
+
+def get_ma(prices, ma_amount: int):
+    ma_prices = {}
+    ma_avgs = {}
+    for time, price in prices.items():
+        ma_prices[time] = price
+        if len(ma_prices) < ma_amount:
+            continue
+        else:
+            ma_avgs[time] = sum(get_last_n_values(ma_prices, ma_amount).values()) / ma_amount
+    return ma_avgs
 
 def __main__():
     ticker = input("Enter ticker: ")
     data = get_prices(ticker)
     closes = get_closes(data)
-    closes = get_last_n_values(closes, 20)
-    graph_closes(closes)
+    closes = get_last_n_values(closes, 50)
+    ma_12 = get_ma(closes, 12)
+    ma_26 = get_ma(closes, 26)
+    graph_charts(closes, ma_12, ma_26)
 
 if __name__ == "__main__":
     __main__()

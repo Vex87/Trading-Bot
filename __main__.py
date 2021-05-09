@@ -9,7 +9,7 @@ def get_last_n_values(dic, n: int):
         new_dic[i] = dic.get(i)
     return new_dic
 
-class Stock:
+class StockInfo:
     def __init__(self, ticker: str):
         self.ticker = ticker.lower()
 
@@ -69,7 +69,7 @@ class Stock:
                 histogram[time] = signal_line_value - macd_value
         return histogram
 
-    def graph(self, chart_range, charts):
+    def _graph(self, chart_range, charts):
         plt.xlabel("Time")
         plt.ylabel("Price")
         plt.title(self.ticker.upper())
@@ -93,26 +93,26 @@ class Stock:
 
         plt.xticks(chart_range)
         plt.legend()
-        plt.show()
+        plt.show(block=False)
     
     def graph_ma(self, period, interval):
         closes = self.get_closes(PERIOD, INTERVAL)
         ma_50 = self.get_ma(MA_SHORT, PERIOD, INTERVAL)
         ma_200 = self.get_ma(MA_LONG, PERIOD, INTERVAL)
-        self.graph(range(0, len(closes), X_AXIS_INTERVAL), {
-            "Price": closes, 
-            "50MA": ma_50,
-            "200MA": ma_200
+        self._graph(range(0, len(closes), X_AXIS_INTERVAL), {
+            "Price": {"type": "line", "data": closes}, 
+            "50MA": {"type": "line", "data": ma_50},
+            "200MA": {"type": "line", "data": ma_200}
         })
 
     def graph_ema(self, period, interval):
         closes = self.get_closes(PERIOD, INTERVAL)
         ema_9 = self.get_ema(closes, 9, EMA_MULTIPLIER)
         ema_26 = self.get_ema(closes, 26, EMA_MULTIPLIER)
-        self.graph(range(0, len(closes), X_AXIS_INTERVAL), {
-            "Price": closes, 
-            "9EMA": ema_9,
-            "26EMA": ema_26,
+        self._graph(range(0, len(closes), X_AXIS_INTERVAL), {
+            "Price": {"type": "line", "data": closes}, 
+            "9EMA": {"type": "line", "data": ema_9},
+            "26EMA": {"type": "line", "data": ema_26},
         })
 
     def graph_macd(self, period, interval):
@@ -123,16 +123,80 @@ class Stock:
         macd = self.get_macd(ema_9, ema_26)
         signal_line = self.get_ema(macd, SIGNAL_LINE, EMA_MULTIPLIER)
         histogram = self.get_macd_histogram(signal_line, macd)
-        self.graph(range(0, len(closes), X_AXIS_INTERVAL), {
+        self._graph(range(0, len(closes), x_axis_interval), {
             "MACD": {"type": "line", "data": macd},
             "Signal Line": {"type": "line", "data": signal_line},
             "Histogram": {"type": "bar", "data": histogram}
         })
 
+    def graph_all(self):
+        closes = self.get_closes(PERIOD, INTERVAL)
+        figure, axis = plt.subplots(2, 2)
+       
+        # MA
+        
+        ma_50 = self.get_ma(MA_SHORT, PERIOD, INTERVAL)
+        ma_200 = self.get_ma(MA_LONG, PERIOD, INTERVAL)
+        
+        axis[0, 0].plot(closes.keys(), closes.values(), label="Price")
+        axis[0, 0].plot(ma_50.keys(), ma_50.values(), label="50MA")
+        axis[0, 0].plot(ma_200.keys(), ma_200.values(), label="200MA")
+        axis[0, 0].set_title("MA")
+        axis[0, 0].set_xlabel("Time")
+        axis[0, 0].set_ylabel("Price")
+        axis[0, 0].legend()
+        axis[0, 0].set_xticks(range(0, len(closes), X_AXIS_INTERVAL))
+
+        # EMA
+
+        ema_9 = self.get_ema(closes, 9, EMA_MULTIPLIER)
+        ema_26 = self.get_ema(closes, 26, EMA_MULTIPLIER)
+
+        axis[0, 1].plot(closes.keys(), closes.values(), label="Price")
+        axis[0, 1].plot(ema_9.keys(), ema_9.values(), label="9EMA")
+        axis[0, 1].plot(ema_26.keys(), ema_26.values(), label="26EMA")
+        axis[0, 1].set_title("EMA")
+        axis[0, 1].set_xlabel("Time")
+        axis[0, 1].set_ylabel("Price")
+        axis[0, 1].legend()
+        axis[0, 1].set_xticks(range(0, len(closes), X_AXIS_INTERVAL))
+
+        # MACD
+
+        ema_9 = self.get_ema(closes, 9, EMA_MULTIPLIER)
+        ema_26 = self.get_ema(closes, 26, EMA_MULTIPLIER)
+
+        macd = self.get_macd(ema_9, ema_26)
+        signal_line = self.get_ema(macd, SIGNAL_LINE, EMA_MULTIPLIER)
+        histogram = self.get_macd_histogram(signal_line, macd)
+
+        axis[1, 0].plot(macd.keys(), macd.values(), label="MACD")
+        axis[1, 0].plot(signal_line.keys(), signal_line.values(), label="Signal Line")
+        bar = axis[1, 0].bar(histogram.keys(), histogram.values(), label="Histogram")
+
+        for time, price in histogram.items():
+            index = list(histogram.keys()).index(time)
+            if price >= 0:
+                bar[index].set_color("g")
+            else:
+                bar[index].set_color("r")
+
+        axis[1, 0].set_title("MACD")
+        axis[1, 0].axhline(0)
+        axis[1, 0].set_xlabel("Time")
+        axis[1, 0].set_ylabel("Values")
+        axis[1, 0].legend()
+        axis[1, 0].set_xticks(range(0, len(closes), X_AXIS_INTERVAL))
+
+        # Other
+
+        plt.show(block=False)
+
 def __main__():
-    ticker = input("Enter ticker: ")
-    stock_info = Stock(ticker)
-    stock_info.graph_macd(PERIOD, INTERVAL)
+    while True:
+        ticker = input("Enter ticker: ")
+        stock_info = StockInfo(ticker)
+        stock_info.graph_all()
 
 if __name__ == "__main__":
     __main__()

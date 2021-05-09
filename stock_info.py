@@ -1,13 +1,8 @@
 import yfinance as yf
 import matplotlib.pyplot as plt
+import sys
 from constants import *
-import json
-
-def get_last_n_values(dic, n: int):
-    new_dic = {}
-    for i in list(dic)[len(dic) - n:]:
-        new_dic[i] = dic.get(i)
-    return new_dic
+from helper import get_last_n_values
 
 class StockInfo:
     def __init__(self, ticker: str):
@@ -195,6 +190,9 @@ class StockInfo:
 def __main__():
     while True:
         ticker = input("Enter ticker: ")
+        if ticker.lower() == "exit":
+            sys.exit()
+
         stock_info = StockInfo(ticker)
         stock_info.graph_all()
 

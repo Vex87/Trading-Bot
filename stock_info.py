@@ -1,4 +1,5 @@
 import yfinance as yf
+from yahoo_fin import stock_info as si
 import matplotlib.pyplot as plt
 import sys
 from constants import *
@@ -10,6 +11,10 @@ class StockInfo:
 
     def get_prices(self, period, interval):
         return yf.download(tickers=self.ticker, period=period, interval=interval)
+
+    def get_current_price(self):
+        price = si.get_live_price(self.ticker)
+        return price
 
     def get_closes(self, period, interval):
         closes = {}

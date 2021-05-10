@@ -54,9 +54,9 @@ class Trading():
             return "sell"
     
     def buy_shares(self):
-        price = round(self.stock_info.get_current_price())
-        shares_to_buy = self.session_data["balance"] / price
-        money_to_spend = int(self.session_data["balance"])
+        price = round(self.stock_info.get_current_price(), 2)
+        shares_to_buy = round(self.session_data["balance"] / price, 4)
+        money_to_spend = round(self.session_data["balance"], 2)
         
         self.session_data["shares"] = shares_to_buy
         self.session_data["balance"] = 0
@@ -72,9 +72,9 @@ class Trading():
         print(f"Bought {shares_to_buy} shares of {self.ticker} at ${price} (-${money_to_spend})")
 
     def sell_shares(self):
-        price = round(self.stock_info.get_current_price())
-        shares_to_sell = str(self.session_data["shares"])
-        money_to_earn = price * self.session_data["shares"]
+        price = round(self.stock_info.get_current_price(), 2)
+        shares_to_sell = str(round(self.session_data["shares"], 4))
+        money_to_earn = round(price * self.session_data["shares"], 2)
         
         self.session_data["shares"] = 0
         self.session_data["balance"] = money_to_earn

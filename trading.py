@@ -75,9 +75,7 @@ class Trading():
         pass
 
 def __main__():
-    ticker = input("Enter ticker: ")
-    starting_balance = int(input("Enter starting balance: "))
-    Trading(ticker, starting_balance)
+    Trading(TRADE_STOCK, TRADE_STARTING_BALANCE)
 
 if __name__ == "__main__":
     __main__()

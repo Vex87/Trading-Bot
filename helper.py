@@ -37,3 +37,21 @@ def get_last_n_values(dic, n: int):
         new_dic[i] = dic.get(i)
     return new_dic
 
+def attach_prefix_to_number(number, prefix: str):
+    if number < 0:
+        number = abs(number)
+        return f"-{prefix}{number}"
+    elif number > 0:
+        return f"+{prefix}{number}"
+    elif number == 0:
+        return f"{prefix}{number}"
+
+def attach_suffix_to_number(number, suffix: str):
+    if number < 0:
+        number = abs(number)
+        return f"-{number}{suffix}"
+    elif number > 0:
+        return f"+{number}{suffix}"
+    elif number == 0:
+        return f"{number}{suffix}"
+

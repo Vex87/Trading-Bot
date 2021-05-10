@@ -1,6 +1,6 @@
 import sys
 import time
-from helper import get_session_data
+from helper import get_session_data, attach_prefix_to_number, attach_suffix_to_number
 
 def __main__():
     while True:
@@ -32,16 +32,27 @@ def __main__():
             win_trades = 0
             loss_trades = 0
 
+            trades = []
             for i, buy_trade in enumerate(session_data["trades"]):
                 if buy_trade["type"] == "buy":
-                    try:    
-                        sell_trade = session_data["trades"][i + 1]
-                        if sell_trade["price"] >= buy_trade["price"]:
-                            win_trades += 1
-                        else:
-                            loss_trades += 1
-                    except:
-                        pass
+                    sell_trade = session_data["trades"][i + 1]
+                    
+                    buy_price = buy_trade["price"]
+                    sell_price = sell_trade["price"]
+                    profit = round(sell_price - buy_price, 2)
+                    profit_percent = round(profit / buy_price * 100, 2)
+
+                    buy_price = attach_prefix_to_number(buy_price, "$")
+                    sell_price = attach_prefix_to_number(sell_price, "$")
+                    profit = attach_prefix_to_number(profit, "$")
+                    profit_percent = attach_suffix_to_number(profit_percent, "%")
+
+                    trades.append(f"{buy_price} -> {sell_price} | {profit} ({profit_percent})")            
+                    
+                    if sell_trade["price"] >= buy_trade["price"]:
+                        win_trades += 1
+                    else:
+                        loss_trades += 1
 
             win_rate = round(win_trades / (win_trades + loss_trades), 4) * 100
             price_change = session_data["trades"][-1]["price"] - session_data["trades"][0]["price"]
@@ -51,6 +62,13 @@ def __main__():
             print(f"Loss Trades: {loss_trades}")
             print(f"Win Rate: {win_rate}%")
             print(f"Price Change: ${price_change}")
+
+            print("----------------------------------------------")
+            
+            for trade in trades:
+                print(trade)
+            
+            print("----------------------------------------------")
 
 if __name__ == "__main__":
     __main__()

@@ -54,20 +54,39 @@ class Trading():
             return "sell"
     
     def buy_shares(self):
-        price = self.stock_info.get_current_price()
+        price = round(self.stock_info.get_current_price())
         shares_to_buy = self.session_data["balance"] / price
         money_to_spend = int(self.session_data["balance"])
+        
         self.session_data["shares"] = shares_to_buy
         self.session_data["balance"] = 0
+        
+        trade_info = DEFAULT_TRADE_DATA.copy()
+        trade_info["time"] = round(time.time())
+        trade_info["type"] = "buy"
+        trade_info["price"] = price
+        trade_info["shares"] = shares_to_buy
+        self.session_data["trades"].append(trade_info)
+        
         save_session_data(self.session_data)
         print(f"Bought {shares_to_buy} shares of {self.ticker} at ${price} (-${money_to_spend})")
 
     def sell_shares(self):
-        price = self.stock_info.get_current_price()
+        price = round(self.stock_info.get_current_price())
         shares_to_sell = str(self.session_data["shares"])
         money_to_earn = price * self.session_data["shares"]
+        
         self.session_data["shares"] = 0
         self.session_data["balance"] = money_to_earn
+        save_session_data(self.session_data)
+        
+        trade_info = DEFAULT_TRADE_DATA.copy()
+        trade_info["time"] = round(time.time())
+        trade_info["type"] = "sell"
+        trade_info["price"] = price
+        trade_info["shares"] = shares_to_sell
+        self.session_data["trades"].append(trade_info)
+
         save_session_data(self.session_data)
         print(f"Sold {shares_to_sell} shares of {self.ticker} at ${price} (+${money_to_earn})")
 

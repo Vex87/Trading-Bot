@@ -1,7 +1,7 @@
-PERIOD = "5d"
+PERIOD = "1d"
 INTERVAL = "1m"
-MAX_VALUES = 300
-X_AXIS_INTERVAL = 60
+MAX_VALUES = 60
+X_AXIS_INTERVAL = 360
 
 MA_SHORT = 50
 MA_LONG = 200
@@ -15,7 +15,6 @@ TRADE_STARTING_BALANCE = 1000
 
 DEFAULT_SESSION_DATA = {
     "start_time": None,
-    "end_time": None,
     "ticker": None,
     "shares": 0,
     "starting_balance": 0,

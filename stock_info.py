@@ -21,6 +21,7 @@ class StockInfo:
         prices = self.get_prices(period, interval)
         for i, price in prices["Close"].items():
             closes[str(i.time())] = price
+        closes = get_last_n_values(closes, MAX_VALUES)
         return closes
 
     def get_ma(self, ma_amount, period, interval):

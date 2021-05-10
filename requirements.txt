@@ -1,4 +1,4 @@
 yfinance==0.1.59
 pymongo==3.11.2
 yahoo-fin==0.8.8
-
+matplotlib==3.4.2

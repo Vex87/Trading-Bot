@@ -29,6 +29,13 @@ def get_session_data(start_time: int):
 def save_session_data(session_data):
     datastore.update_one({"start_time": session_data["start_time"]}, {"$set": session_data})
 
+def get_all_sessions():
+    all_data = []
+    for data in datastore.find({}):
+        data = attach_default_session_data(data)
+        all_data.append(data)
+    return all_data
+
 # misc
 
 def get_last_n_values(dic, n: int):
@@ -36,4 +43,22 @@ def get_last_n_values(dic, n: int):
     for i in list(reversed(list(dic)))[0:n]:
         new_dic[i] = dic.get(i)
     return new_dic
+
+def attach_prefix_to_number(number, prefix: str):
+    if number < 0:
+        number = abs(number)
+        return f"-{prefix}{number}"
+    elif number > 0:
+        return f"+{prefix}{number}"
+    elif number == 0:
+        return f"{prefix}{number}"
+
+def attach_suffix_to_number(number, suffix: str):
+    if number < 0:
+        number = abs(number)
+        return f"-{number}{suffix}"
+    elif number > 0:
+        return f"+{number}{suffix}"
+    elif number == 0:
+        return f"{number}{suffix}"
 

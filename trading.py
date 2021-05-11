@@ -7,10 +7,18 @@ import time
 
 class Trading():
     def __init__(self, ticker: str, starting_balance: int):
-        self.ticker = ticker.lower()
-        self.stock_info = StockInfo(self.ticker)
-        self.start_time = round(time.time())
-        self.starting_balance = starting_balance
+        if TRADE_TO_RESUME:
+            print(f"Resuming trade {TRADE_TO_RESUME}")
+            self.session_data = get_session_data(TRADE_TO_RESUME)
+            self.ticker = self.session_data["ticker"]
+            self.stock_info = StockInfo(self.ticker)
+            self.start_time = self.session_data["start_time"]
+            self.starting_balance = self.session_data["starting_balance"]
+        else:
+            self.ticker = ticker.lower()
+            self.stock_info = StockInfo(self.ticker)
+            self.start_time = round(time.time())
+            self.starting_balance = starting_balance
         self.start_session()
 
     def start_session(self):

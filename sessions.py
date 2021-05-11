@@ -1,5 +1,6 @@
 import sys
 import time
+import math
 from helper import get_session_data, get_all_sessions, attach_prefix_to_number, attach_suffix_to_number
 
 def get_session_info(start_time: int):
@@ -20,8 +21,8 @@ def get_session_info(start_time: int):
     print(f"Profit: ${profit}")
     print(f"Shares: {shares}")
 
-    trades_count = len(session_data["trades"])
-    if trades_count < 2:
+    trades_count = math.floor(len(session_data["trades"]) / 2)
+    if trades_count < 1:
         return
 
     trades = []
@@ -38,8 +39,8 @@ def get_session_info(start_time: int):
             except IndexError:
                 pass
 
-    win_rate = round(win_trades / (win_trades + loss_trades), 4) * 100
-    price_change = session_data["trades"][-1]["price"] - session_data["trades"][0]["price"]
+    win_rate = round(win_trades / (win_trades + loss_trades) * 100, 2)
+    price_change = round((session_data["trades"][-1]["price"] - session_data["trades"][0]["price"]), 2)
 
     print(f"Trades: {trades_count}")
     print(f"Win Trades: {win_trades}")

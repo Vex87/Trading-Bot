@@ -2,6 +2,7 @@ import sys
 import time
 import math
 from helper import get_session_data, get_all_sessions, attach_prefix_to_number, attach_suffix_to_number
+from stock_info import StockInfo
 
 def get_session_info(start_time: int):
     session_data = get_session_data(int(start_time))
@@ -9,16 +10,28 @@ def get_session_info(start_time: int):
         print(f"Could not find session {start_time}")
         return
 
+    stock_info = StockInfo(session_data["ticker"])
+    stock_price = round(stock_info.get_current_price(), 2)
+
     start_time = time.ctime(session_data["start_time"])
     starting_balance = session_data["starting_balance"]
     balance = round(session_data["balance"], 2)
-    profit = round(balance - starting_balance, 2)
     shares = session_data["shares"]
-    
+    wealth = (shares * stock_price) + balance
+    profit = round(wealth - starting_balance, 2)
+    profit_percent = round((wealth - starting_balance) / starting_balance * 100)
+
+    starting_balance = attach_prefix_to_number(starting_balance, "$")
+    balance = attach_prefix_to_number(balance, "$")
+    wealth = attach_prefix_to_number(wealth, "$")
+    profit = attach_prefix_to_number(profit, "$")
+    profit_percent = attach_suffix_to_number(profit_percent, "%")
+
     print(f"Start Time: {start_time}")
-    print(f"Starting Balance: ${starting_balance}")
-    print(f"Balance: ${balance}")
-    print(f"Profit: ${profit}")
+    print(f"Wealth: {wealth}")
+    print(f"Starting Balance: {starting_balance}")
+    print(f"Balance: {balance}")
+    print(f"Profit: {profit}")
     print(f"Shares: {shares}")
 
     trades_count = math.floor(len(session_data["trades"]) / 2)
@@ -41,12 +54,15 @@ def get_session_info(start_time: int):
 
     win_rate = round(win_trades / (win_trades + loss_trades) * 100, 2)
     price_change = round((session_data["trades"][-1]["price"] - session_data["trades"][0]["price"]), 2)
+    
+    win_rate = attach_suffix_to_number(win_rate, "%")
+    price_change = attach_prefix_to_number(price_change, "$")
 
     print(f"Trades: {trades_count}")
     print(f"Win Trades: {win_trades}")
     print(f"Loss Trades: {loss_trades}")
-    print(f"Win Rate: {win_rate}%")
-    print(f"Price Change: ${price_change}")
+    print(f"Win Rate: {win_rate}")
+    print(f"Price Change: {price_change}")
 
 def get_session_trades(start_time: int):
     session_data = get_session_data(int(start_time))
@@ -89,11 +105,15 @@ def __main__():
             for session_data in get_all_sessions():
                 print(session_data["start_time"])
         elif command == "getsessioninfo":
-            start_time = arguments[1]
-            get_session_info(start_time)
+            if len(arguments) < 2:
+                print("Missing argument: session start_time")
+                continue
+            get_session_info(arguments[1])
         elif command == "getsessiontrades":
-            start_time = arguments[1]
-            get_session_trades(start_time)
+            if len(arguments) < 2:
+                print("Missing argument: session start_time")
+                continue
+            get_session_trades(arguments[1])
         elif command == "exit":
             sys.exit()
         else:

@@ -1,6 +1,7 @@
 import sys
 import time
 import math
+import matplotlib.pyplot as plt
 from helper import get_session_data, get_all_sessions, attach_prefix_to_number, attach_suffix_to_number
 from stock_info import StockInfo
 
@@ -89,18 +90,38 @@ def get_session_trades(start_time: int):
             except IndexError:
                 pass
 
+def get_session_charts(start_time: int):
+    session_data = get_session_data(int(start_time))
+    if not session_data:
+        print(f"Could not find session {start_time}")
+        return
+
+    balance_history = {}
+    for sell_trade in session_data["trades"]:
+        if sell_trade["type"] == "sell":
+            balance_history[sell_trade["time"]] = float(sell_trade["shares"]) * float(sell_trade["price"])
+
+    figure, axis = plt.subplots(2, 2)
+    axis[0, 0].plot(balance_history.keys(), balance_history.values(), label="Balance")
+    axis[0, 0].set_title("Balance")
+    axis[0, 0].set_xlabel("Time")
+    axis[0, 0].set_ylabel("Balance")
+    axis[0, 0].legend()
+    plt.show(block=False)
+
 def __main__():
     while True:
-        input_text = input("> ")
+        input_text = input("$ ")
         arguments = input_text.split(" ")
         command = arguments[0]
         
         if command == "help":
-            print("getallsessions                  Gets start times for all stored sessions.")
-            print("getsessioninfo <start_time>     Gets info for a session.")
-            print("getsessiontrades <start_time>   Gets all trades for a session.")
-            print("help                            Shows this menu.")
-            print("exit                            Stops the script.")
+            print("getallsessions                   Gets start times for all stored sessions.")
+            print("getsessioninfo <start_time>      Gets info for a session.")
+            print("getsessiontrades <start_time>    Gets all trades for a session.")
+            print("getsessioncharts <start_time>    Gets a chart for all trades of a session.")
+            print("help                             Shows this menu.")
+            print("exit                             Stops the script.")
         elif command == "getallsessions":
             for session_data in get_all_sessions():
                 print(session_data["start_time"])
@@ -114,6 +135,11 @@ def __main__():
                 print("Missing argument: session start_time")
                 continue
             get_session_trades(arguments[1])
+        elif command == "getsessioncharts":
+            if len(arguments) < 2:
+                print("Missing argument: session start_time")
+                continue
+            get_session_charts(arguments[1])
         elif command == "exit":
             sys.exit()
         else:

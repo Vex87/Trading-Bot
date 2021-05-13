@@ -18,7 +18,7 @@ def get_session_info(start_time: int):
     starting_balance = session_data["starting_balance"]
     balance = round(session_data["balance"], 2)
     shares = session_data["shares"]
-    wealth = (shares * stock_price) + balance
+    wealth = round((shares * stock_price) + balance, 2)
     profit = round(wealth - starting_balance, 2)
     profit_percent = round((wealth - starting_balance) / starting_balance * 100)
 
@@ -29,10 +29,8 @@ def get_session_info(start_time: int):
     profit_percent = attach_suffix_to_number(profit_percent, "%")
 
     print(f"Start Time: {start_time}")
-    print(f"Wealth: {wealth}")
-    print(f"Starting Balance: {starting_balance}")
+    print(f"Wealth: {wealth} | {profit} ({profit_percent}) | {starting_balance} -> {wealth}")
     print(f"Balance: {balance}")
-    print(f"Profit: {profit}")
     print(f"Shares: {shares}")
 
     trades_count = math.floor(len(session_data["trades"]) / 2)
@@ -54,16 +52,17 @@ def get_session_info(start_time: int):
                 pass
 
     win_rate = round(win_trades / (win_trades + loss_trades) * 100, 2)
-    price_change = round((session_data["trades"][-1]["price"] - session_data["trades"][0]["price"]), 2)
-    
+    initial_price = session_data["trades"][0]["price"]
+    final_price = session_data["trades"][-1]["price"]
+    price_change = round(final_price - initial_price, 2)
+    price_change_percentage = round(price_change / initial_price * 100, 2)
+
     win_rate = attach_suffix_to_number(win_rate, "%")
     price_change = attach_prefix_to_number(price_change, "$")
+    price_change_percentage = attach_suffix_to_number(price_change_percentage, "%")
 
-    print(f"Trades: {trades_count}")
-    print(f"Win Trades: {win_trades}")
-    print(f"Loss Trades: {loss_trades}")
-    print(f"Win Rate: {win_rate}")
-    print(f"Price Change: {price_change}")
+    print(f"Win Rate: {win_rate} | {win_trades}:{loss_trades} / {trades_count}")
+    print(f"Price Change: {price_change} ({price_change_percentage}) | {initial_price} -> {final_price}")
 
 def get_session_trades(start_time: int):
     session_data = get_session_data(int(start_time))

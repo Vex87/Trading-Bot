@@ -109,6 +109,26 @@ def get_session_charts(start_time: int):
     axis[0, 0].legend()
     plt.show(block=False)
 
+def getallsessions():
+    for session_data in get_all_sessions():
+        stock_info = StockInfo(session_data["ticker"])
+        stock_price = round(stock_info.get_current_price(), 2)
+
+        start_time_raw = session_data["start_time"]
+        start_time = time.ctime(start_time_raw)
+        starting_balance = session_data["starting_balance"]
+        balance = round(session_data["balance"], 2)
+        shares = session_data["shares"]
+        wealth = round((shares * stock_price) + balance, 2)
+        profit = round(wealth - starting_balance, 2)
+        profit_percent = round((wealth - starting_balance) / starting_balance * 100)
+
+        wealth = attach_prefix_to_number(wealth, "$")
+        profit = attach_prefix_to_number(profit, "$")
+        profit_percent = attach_suffix_to_number(profit_percent, "%")
+    
+        print(f"{start_time_raw} ({start_time}) | {wealth} | {profit} ({profit_percent})")
+
 def __main__():
     while True:
         input_text = input("$ ")
@@ -123,8 +143,7 @@ def __main__():
             print("help                             Shows this menu.")
             print("exit                             Stops the script.")
         elif command == "getallsessions":
-            for session_data in get_all_sessions():
-                print(session_data["start_time"])
+            getallsessions()
         elif command == "getsessioninfo":
             if len(arguments) < 2:
                 print("Missing argument: session start_time")

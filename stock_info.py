@@ -14,8 +14,11 @@ class StockInfo:
         return prices
 
     def get_current_price(self):
-        price = si.get_live_price(self.ticker)
-        return price
+        try:
+            price = si.get_live_price(self.ticker)
+            return price
+        except:
+            return None
 
     def get_closes(self, period, interval):
         closes = {}
